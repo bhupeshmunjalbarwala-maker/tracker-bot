@@ -1,37 +1,60 @@
-'use client'; // This is a Client Component
+'use client';
 
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
 export function AddProductForm({ addProductAction }) {
   const formRef = useRef(null);
+  const [url, setUrl] = useState('');
+  const showPartNumber = url.includes('apple.com');
 
   async function formAction(formData) {
-    // Reset the form
-    formRef.current?.reset();
-
-    // Call the server action
     const result = await addProductAction(formData);
-
-    // Show a toast message
+    
     if (result?.error) {
       toast.error(result.error);
     } else {
       toast.success("Product added to tracker!");
+      formRef.current?.reset();
+      setUrl('');
     }
   }
 
   return (
-    <form ref={formRef} action={formAction} className="flex w-full items-center space-x-2">
+    <form ref={formRef} action={formAction} className="flex flex-col w-full space-y-3">
+      <div className="flex w-full items-center space-x-2">
+        <Input
+          type="text"
+          name="url"
+          placeholder="Paste Croma or Apple URL"
+          required
+          value={url}
+          onChange={(e) => setUrl(e.target.value)}
+        />
+        <Button type="submit">Add Product</Button>
+      </div>
+      
+      {/* This is the new conditional field for Apple */}
+      {showPartNumber && (
+        <Input
+          type="text"
+          name="partNumber"
+          placeholder="Apple Part Number (e.g., MG6P4HN/A)"
+          required
+          className="transition-all duration-300"
+        />
+      )}
+
+      {/* --- ADD THIS NEW FIELD --- */}
       <Input
         type="text"
-        name="url"
-        placeholder="Paste Flipkart or Croma URL"
-        required
+        name="affiliateLink"
+        placeholder="Your Affiliate Link (Optional)"
       />
-      <Button type="submit">Add Product</Button>
+      {/* ------------------------ */}
+
     </form>
   );
 }

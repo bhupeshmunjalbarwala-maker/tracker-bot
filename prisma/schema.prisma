@@ -18,9 +18,13 @@ model Product {
   id        Int      @id @default(autoincrement())
   name      String
   url       String
-  productId String   @map("product_id") // Maps to 'product_id' column in the DB
-  storeType String   @map("store_type") // Maps to 'store_type' column in the DB
-  createdAt DateTime @default(now())    @map("created_at")
+  productId String   @map("product_id")
+  storeType String   @map("store_type")
+  createdAt DateTime @default(now()) @map("created_at")
+  partNumber String?  @map("part_number")
 
-  @@map("products") // This names the actual table in your database 'products'
+  // --- ADD THIS LINE ---
+  affiliateLink String?  @map("affiliate_link") // Optional, for your link
+
+  @@map("products")
 }

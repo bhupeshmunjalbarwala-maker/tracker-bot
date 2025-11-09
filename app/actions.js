@@ -1,65 +1,61 @@
-'use server'; // This is a Server Actions file!
+'use server';
 
 import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 
-/**
- * Parses a URL to find the store type and product ID.
- */
-function getProductDetails(url) {
+// getProductDetails function (no changes needed)
+function getProductDetails(url, partNumber) {
+  // ... (this function is the same as before) ...
   try {
     const parsedUrl = new URL(url);
 
-    if (parsedUrl.hostname.includes('flipkart.com')) {
-      const pid = parsedUrl.searchParams.get('pid');
-      if (!pid) {
-        throw new Error('Flipkart URL is missing a "pid" query parameter.');
+    if (parsedUrl.hostname.includes('apple.com')) {
+      if (!partNumber) {
+        throw new Error('Apple products require a Part Number.');
       }
-      // Extract product name from the path, make it readable
-      const name = parsedUrl.pathname.split('/')[1].replace(/-/g, ' ').slice(0, 50) + '...';
+      const name = (parsedUrl.pathname.split('/')[3] || 'Apple Product')
+                   .replace(/-/g, ' ').slice(0, 50) + '...';
       return {
-        name: name,
-        productId: pid,
-        storeType: 'flipkart',
+        name: `(Apple) ${name}`,
+        productId: partNumber, 
+        storeType: 'apple',
+        partNumber: partNumber
       };
     }
-
+    
     if (parsedUrl.hostname.includes('croma.com')) {
       const pathParts = parsedUrl.pathname.split('/');
       const pid = pathParts[pathParts.length - 1];
-      if (!pid || !/^\d+$/.test(pid)) {
-        throw new Error('Could not find a valid product ID at the end of the Croma URL.');
-      }
-      // Extract product name from the path
-      const name = pathParts[1].replace(/-/g, ' ').slice(0, 50) + '...';
-      return {
-        name: name,
-        productId: pid,
-        storeType: 'croma',
+      if (!pid || !/^\d+$/.test(pid)) throw new Error('Could not find a valid product ID in the Croma URL.');
+      const name = (pathParts[1] || 'Croma Product')
+                   .replace(/-/g, ' ').slice(0, 50) + '...';
+      return { 
+        name: `(Croma) ${name}`, 
+        productId: pid, 
+        storeType: 'croma', 
+        partNumber: null 
       };
     }
 
-    throw new Error('Sorry, only Flipkart and Croma URLs are supported.');
-
+    throw new Error('Sorry, only Croma and Apple URLs are supported.');
+  
   } catch (error) {
-    console.error("URL Parsing Error:", error.message);
     return { error: error.message };
   }
 }
 
-/**
- * Server Action to add a product.
- */
+// Server Action to add a product (UPDATE THIS)
 export async function addProduct(formData) {
   const url = formData.get('url');
-  if (!url) {
-    return { error: 'URL is required.' };
-  }
+  const partNumber = formData.get('partNumber');
+  
+  // --- GET THE NEW FIELD ---
+  const affiliateLink = formData.get('affiliateLink');
 
-  const details = getProductDetails(url);
-  if (details.error) {
-    return { error: details.error };
-  }
+  if (!url) return { error: 'URL is required.' };
+
+  const details = getProductDetails(url, partNumber);
+  if (details.error) return { error: details.error };
 
   try {
     await prisma.product.create({
@@ -68,31 +64,28 @@ export async function addProduct(formData) {
         url: url,
         productId: details.productId,
         storeType: details.storeType,
+        partNumber: details.partNumber,
+        
+        // --- SAVE THE NEW FIELD ---
+        affiliateLink: affiliateLink || null, // Save it (or null if empty)
       },
     });
-
-    revalidatePath('/'); // This tells Next.js to refresh the product list on the page
+    revalidatePath('/');
     return { success: `Added ${details.name}` };
-
   } catch (error) {
-    console.error("Database Error:", error);
-    return { error: 'Failed to add product to database. Is it a duplicate?' };
+    console.error(error);
+    return { error: 'Failed to add product. Is it a duplicate?' };
   }
 }
 
-/**
- * Server Action to delete a product.
- */
+// deleteProduct function (no changes needed)
 export async function deleteProduct(id) {
+ // ... (this function is the same as before) ...
   if (!id) return;
-
   try {
-    await prisma.product.delete({
-      where: { id: id },
-    });
-    revalidatePath('/'); // Refresh the product list
+    await prisma.product.delete({ where: { id: id } });
+    revalidatePath('/');
   } catch (error) {
-    console.error("Delete Error:", error);
-    // Fail silently for now
+    // Fail silently
   }
 }
