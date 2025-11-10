@@ -1,3 +1,4 @@
 requests
 psycopg2-binary
 amazon-paapi5
+BeautifulSoup4
