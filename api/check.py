@@ -6,7 +6,8 @@ from bs4 import BeautifulSoup
 # ==================================
 # 🔧 CONFIGURATION
 # ==================================
-PINCODES_TO_CHECK = ["132001"]
+PINCODES_TO_CHECK = str(os.getenv("PINCODES_TO_CHECK"))
+PINCODES_TO_CHECK = PINCODES_TO_CHECK.split(",") 
 DATABASE_URL = os.getenv("DIRECT_URL")
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 TELEGRAM_GROUP_ID = str(os.getenv("TELEGRAM_GROUP_ID")) # Telegram group ID
