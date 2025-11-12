@@ -449,7 +449,6 @@ def main_logic():
                 if result:
                     croma_count += 1
                     in_stock.append(result)
-                    break
         elif product["storeType"] == "flipkart":
             flip_total += 1
             for pincode in PINCODES_TO_CHECK:
@@ -457,7 +456,6 @@ def main_logic():
                 if result:
                     flip_count += 1
                     in_stock.append(result)
-                    break
         elif product["storeType"] == "amazon":
             amazon_total += 1
             result = check_amazon(product)
