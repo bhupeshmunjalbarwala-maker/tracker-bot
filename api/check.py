@@ -430,13 +430,6 @@ def main_logic():
     # ----------------------------------------------------
     # NEW: Check Unicorn stock separately for iPhone 17 variants
     # ----------------------------------------------------
-    unicorn_results = check_unicorn()
-    # We checked 5 variants total (all are 256GB)
-    unicorn_total = 5 
-    unicorn_count = len(unicorn_results)
-    if unicorn_results:
-        in_stock.extend(unicorn_results)
-    
     # ----------------------------------------------------
     # EXISTING: Loop through DB products
     # ----------------------------------------------------
